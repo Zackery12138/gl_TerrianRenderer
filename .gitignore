@@ -1,0 +1,8 @@
+/.vs
+/_build_
+/lib
+**/bin/
+**.vcxproj
+**.vcxproj.user
+*.sln
+mountains_height.bmp
