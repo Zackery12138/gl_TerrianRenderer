@@ -56,7 +56,7 @@ void UnloadTextures();
 void UnloadModel();
 
 // Function prototypes for shader and model loading
-void LoadShaders(GLuint& program, const char* vertex_file_path, const char* fragment_file_path);
+void LoadShaders(GLuint& program, const char* vertex_file_path, const char* fragment_file_path, const char* tcsPath = nullptr, const char* tesPath = nullptr);
 void LoadTextures();
 void LoadModel();
 
@@ -139,7 +139,7 @@ bool readAndCompileShader(const char* shader_path, const GLuint& id)
 }
 
 //Used to load, compile and link vertex and fragment shaders
-void LoadShaders(GLuint& program, const char* vertex_file_path, const char* fragment_file_path)
+void LoadShaders(GLuint& program, const char* vertex_file_path, const char* fragment_file_path, const char* tcsPath, const char* tesPath)
 {
 	// Create the shaders - tasks 1 and 2
 	//Create shader object
@@ -150,14 +150,29 @@ void LoadShaders(GLuint& program, const char* vertex_file_path, const char* frag
 	bool vok = readAndCompileShader(vertex_file_path, VertexShaderID);
 	bool fok = readAndCompileShader(fragment_file_path, FragmentShaderID);
 
+	bool tcok = false, teok = false;
+	GLuint TCShaderID, TEShaderID;
+	if (tcsPath && tesPath) { // if we use tessellation shader
+		TCShaderID = glCreateShader(GL_TESS_CONTROL_SHADER); 
+		TEShaderID = glCreateShader(GL_TESS_EVALUATION_SHADER); 
+		tcok = readAndCompileShader(tcsPath, TCShaderID); 
+		teok = readAndCompileShader(tesPath, TEShaderID); 
+	}
+
+
 	//linker
-	if (vok && fok) {
+	if (vok && fok && (!tcsPath || tcok) && (!tesPath || teok)) {
 		GLint Result = GL_FALSE;
 		int InfoLogLength;
 		cout << "Linking program" << endl;
 		program = glCreateProgram();
 		glAttachShader(program, VertexShaderID);
 		glAttachShader(program, FragmentShaderID);
+		if (tcok && teok) { 
+			// if we use tessellation shader and no compilling issue, we link them to the program
+			glAttachShader(program, TCShaderID); 
+			glAttachShader(program, TEShaderID); 
+		}
 		glLinkProgram(program);
 		glGetProgramiv(program, GL_LINK_STATUS, &Result);
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &InfoLogLength);
@@ -177,7 +192,10 @@ void LoadShaders(GLuint& program, const char* vertex_file_path, const char* frag
 
 	glDeleteShader(VertexShaderID);
 	glDeleteShader(FragmentShaderID);
-
+	
+	if(tcok) glDeleteShader(TCShaderID);
+	if(teok) glDeleteShader(TEShaderID);
+	
 }
 
 
@@ -553,7 +571,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 		case GLFW_KEY_R:
 			// Reload shaders - maybe only on press to avoid too frequent reloads
 			if (action == GLFW_PRESS) {
-				LoadShaders(programID, "Basic.vert", "Texture.frag");
+				LoadShaders(programID, "Basic.vert", "Texture.frag", "dLod.tesc", "dLod.tese");
 			}
 			break;
 
@@ -633,7 +651,7 @@ int main()
 
 	// Create and load shader programs
 	programID = glCreateProgram();
-	LoadShaders(programID, "Basic.vert", "Texture.frag");
+	LoadShaders(programID, "Basic.vert", "Texture.frag", "dLod.tesc", "dLod.tese");
 
 	// Register key callback
 	glfwSetKeyCallback(window, KeyCallback);

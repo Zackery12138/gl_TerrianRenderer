@@ -1,11 +1,13 @@
-#version 330 core
+#version 400 core
 // Input
-in vec2 UV;
-in mat3 TBN;
-in vec3 normal_wcs;
-in vec3 lightDir_tcs;
-in vec3 viewDir_tcs;
-in float varyingHeight;
+in vec2 te_UV;
+in vec3 te_normal_wcs;
+in vec3 te_lightDir_tcs;
+in vec3 te_viewDir_tcs;
+in float te_varyingHeight;
+
+
+
 
 // Output
 out vec3 color;
@@ -29,13 +31,13 @@ vec3 getPhong(vec3 diffuseColor, vec3 specularDetail, vec3 normalDetail)
     vec3 normal_tcs = normalize(normal);
 
     // get half vector (TCS)
-    vec3 halfVector_tcs = normalize(lightDir_tcs + viewDir_tcs);
+    vec3 halfVector_tcs = normalize(te_lightDir_tcs + te_viewDir_tcs);
 
     // ambient
     vec3 ambient = diffuseColor * 0.1;
 
     // diffuse
-    float diff = max(dot(normal_tcs, lightDir_tcs), 0.0);
+    float diff = max(dot(normal_tcs, te_lightDir_tcs), 0.0);
     vec3 diffuse = diff * diffuseColor;
 
     // specular
@@ -65,23 +67,23 @@ void main()
 //    vec3 normal = normalize(rockNormDetail * 2.0 - 1.0);
 //    color = vec3(abs(normal.x), abs(normal.y), abs(normal.z));
 	
-    vec3 rockDiff = texture(rockDiffSampler, UV * 10).rgb;
-    vec3 rockSpecDetail = texture(rockSpecSampler, UV * 10).rgb;
-    vec3 rockNormDetail = texture(rockNormSampler, UV * 10).rgb;
+    vec3 rockDiff = texture(rockDiffSampler, te_UV * 10).rgb;
+    vec3 rockSpecDetail = texture(rockSpecSampler, te_UV * 10).rgb;
+    vec3 rockNormDetail = texture(rockNormSampler, te_UV * 10).rgb;
     
-    vec3 grassDiff = texture(grassDiffSampler, UV * 20).rgb;
-    vec3 grassSpecDetail = texture(grassSpecSampler, UV * 20).rgb;
-    vec3 grassNormDetail = texture(grassNormSampler, UV * 20).rgb;
+    vec3 grassDiff = texture(grassDiffSampler, te_UV * 20).rgb;
+    vec3 grassSpecDetail = texture(grassSpecSampler, te_UV * 20).rgb;
+    vec3 grassNormDetail = texture(grassNormSampler, te_UV * 20).rgb;
 
-    vec3 snowDiff = texture(snowDiffSampler, UV * 10).rgb;
-    vec3 snowSpecDetail = texture(snowSpecSampler, UV * 10).rgb;
-    vec3 snowNormDetail = texture(snowNormSampler, UV * 10).rgb;
+    vec3 snowDiff = texture(snowDiffSampler, te_UV * 10).rgb;
+    vec3 snowSpecDetail = texture(snowSpecSampler, te_UV * 10).rgb;
+    vec3 snowNormDetail = texture(snowNormSampler, te_UV * 10).rgb;
 
     vec3 rockPhongColor = getPhong(rockDiff, rockSpecDetail, rockNormDetail);
     vec3 grassPhongColor = getPhong(grassDiff, grassSpecDetail, grassNormDetail);
     vec3 snowPhongColor = getPhong(snowDiff, snowSpecDetail, snowNormDetail);
 
-    float currHeight = varyingHeight;
+    float currHeight = te_varyingHeight;
     float rockHeight = 1;
     float snowHeight = 2;
     

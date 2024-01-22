@@ -1,15 +1,16 @@
-#version 330 core
+#version 400 core
 
 // Input
 layout(location = 0) in vec3 vertexPosition_ocs;
 layout(location = 1) in vec2 vertexUV;
 // Output data
+
 out vec2 UV;
-out mat3 TBN;
 out vec3 normal_wcs;
 out vec3 lightDir_tcs;
 out vec3 viewDir_tcs;
 out float varyingHeight;
+
 // Uniforms
 uniform mat4 MVP;
 uniform mat4 Model;
@@ -75,7 +76,7 @@ void main()
     T = normalize(T - dot(T, N) * N);
     B = normalize(B - dot(B, N) * N - dot(B, T) * T);
 
-    TBN = mat3(T, B, N);
+    mat3 TBN = mat3(T, B, N);
 
     lightDir_tcs = TBN * (-lightDir_wcs);
     viewDir_tcs = TBN * (viewPos_wcs - position_wcs);
